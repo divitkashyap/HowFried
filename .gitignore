@@ -1,0 +1,8 @@
+.build/
+artifacts/
+.qa/
+.DS_Store
+
+# Generated machine-specific hook snippets
+docs/claude-hook-addition.json
+docs/codex-hook-addition.json
