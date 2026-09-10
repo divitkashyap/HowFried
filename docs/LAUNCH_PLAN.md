@@ -165,3 +165,26 @@ informs concise native posts. [TikTok's creative guide](https://ads.tiktok.com/b
 supports an early hook and vertical, full-screen storytelling. Its advertising
 recommendations are useful production references, not evidence that our organic
 launch will achieve the same performance. Checked 9 September 2026.
+
+## 10 September launch decision
+
+Post a prototype teaser now; general download launch waits for real hook and global
+dismissal checks and a distribution-ready build. Recommended silent phone shot:
+start on moving notch paws, hold steady through the puppy walk, end on the sitting
+puppy; 12–18 seconds, no spoken introduction. Physical-camera footage is a creative
+choice, not a verified ranking advantage over screen capture.
+
+Caption: “i built a tiny dog that lives in my Mac notch and tells me to touch grass.
+my agents keep working. i take five. 🐾” Add “Mac prototype” to set expectations.
+
+X Premium explicitly offers reply prioritization, not guaranteed reach for a launch
+post: https://help.x.com/en/using-x/x-premium . The current public algorithm predicts
+viewer-specific engagement; raw engagement counts are not the scoring weights:
+https://github.com/xai-org/x-algorithm . Treat this as guidance toward a clear, relevant
+video people choose to watch, not a formula for virality.
+
+Spotify development mode currently needs an owner Premium subscription and permits
+up to five authenticated users: https://developer.spotify.com/documentation/web-api/concepts/quota-modes .
+For an initial release, optional local music is simpler. A future explicit link to open
+a playlist is much smaller than account-connected browsing and playback control.
+One cat is the next character experiment; avoid a breed library before validating use.

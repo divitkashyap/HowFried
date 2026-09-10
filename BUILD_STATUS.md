@@ -19,7 +19,7 @@ changes still require separate authorization. No changes to Loch.
 
 **Runnable local prototype; live provider verification is pending.**
 
-Final bundle: `artifacts/20260909T130738Z-35267/HowFried.app`.
+Final bundle: `artifacts/20260910T094441Z-59118/HowFried.app`.
 Built with Swift 6.3.3 on arm64 macOS 26.6.2, targeting macOS 14+. This is a local
 ad-hoc-signed build, not a notarized or universal distribution artifact.
 
@@ -115,3 +115,22 @@ blush, short paws and rounded belly. Both poses use the same canvas and frame di
 to avoid growing at the transition. Dashboard uses the updated puppy too. Release
 build and signature verification pass; native preview inspected and closed. Latest
 capture: `.qa/howfried-matching-puppy.mp4`. No tracking logic changed.
+
+10 September: added native status menu (Open, Skip, Quit), fixed dashboard Quit footer,
+build date label and equal-width break actions. Release/signature checks pass; native
+dashboard and preview controls inspected; pinned Quit exits cleanly. Two older owner
+builds were found running; they were not terminated by this QA run. Actual cross-app
+dismissal and menu-bar access during the overlay still need a hardware check.
+
+Latest refinement: warm charcoal dashboard, editable 1–200 prompt threshold, and one
+physical pixel of top-edge overscan on the notch panel. 22 tests pass including one
+submission triggering warning. UI verified entering 1; final Apply verification was interrupted by owner interaction. Live provider hook
+verification remains pending. Physical seam needs owner display confirmation.
+
+## Public-source handoff
+
+Codex live delivery subsequently verified: one real submission stored after user
+trusted the HowFried hook. Codex observation enabled with permission; existing hook
+preserved and private backup created. Earlier pending/untouched statements above
+are historical. Claude live delivery remains unverified. Latest setup-prompt bundle:
+`artifacts/20260910T101344Z-64220/HowFried.app`. README is the public capability summary.

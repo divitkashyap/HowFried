@@ -24,7 +24,15 @@ final class NotchPanel: NSPanel {
         NSApp.setActivationPolicy(.accessory)
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         status.button?.image = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: "HowFried")
-        status.button?.target = self; status.button?.action = #selector(toggleDashboard)
+        let menu = NSMenu()
+        let open = NSMenuItem(title: "Open HowFried", action: #selector(openDashboard), keyEquivalent: "")
+        open.target = self; menu.addItem(open)
+        let skip = NSMenuItem(title: "Skip current break", action: #selector(skipBreak), keyEquivalent: "")
+        skip.target = self; menu.addItem(skip)
+        menu.addItem(.separator())
+        let quit = NSMenuItem(title: "Quit HowFried", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quit.target = NSApp; menu.addItem(quit)
+        status.menu = menu
         model.presentationChanged = { [weak self] in self?.updatePanels() }
         model.showWindow = { [weak self] in self?.showDashboard() }
         model.shortcutChanged = { [weak self] in self?.registerShortcut() }
@@ -47,6 +55,8 @@ final class NotchPanel: NSPanel {
         default: return nil
         }
     }
+    @objc private func openDashboard() { showDashboard() }
+    @objc private func skipBreak() { model.skip() }
     @objc private func toggleDashboard() {
         if dashboard?.isVisible == true { dashboard?.orderOut(nil) } else { showDashboard() }
     }
@@ -74,13 +84,14 @@ final class NotchPanel: NSPanel {
                 else if let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea { gap = max(70, right.minX - left.maxX) }
                 else { gap = 180 }
                 let width = gap + 400
+                let bleed = 1 / max(1, screen.backingScaleFactor)
                 let height = NotchGeometry.height(safeTop: screen.safeAreaInsets.top, scale: screen.backingScaleFactor)
-                let frame = NSRect(x: screen.frame.midX - width / 2, y: screen.frame.maxY - height, width: width, height: height)
+                let frame = NSRect(x: screen.frame.midX - width / 2, y: screen.frame.maxY - height, width: width, height: height + bleed)
                 let panel = NotchPanel(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
                 panel.backgroundColor = .clear; panel.isOpaque = false; panel.hasShadow = false
                 panel.level = .statusBar; panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
                 panel.ignoresMouseEvents = true
-                panel.contentView = NSHostingView(rootView: PawWarning(model: model, deadZone: gap).frame(width: width, height: height).ignoresSafeArea())
+                panel.contentView = NSHostingView(rootView: PawWarning(model: model, deadZone: gap).frame(width: width, height: height + bleed).ignoresSafeArea())
                 panel.setFrame(frame, display: true)
                 if ProcessInfo.processInfo.environment["HOWFRIED_LAYOUT_DIAGNOSTICS"] == "1" {
                     print("HowFried warning: topFlush=\(panel.frame.maxY == screen.frame.maxY), height=\(panel.frame.height), width=\(panel.frame.width), deadZone=\(gap)")

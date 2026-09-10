@@ -72,7 +72,14 @@ Target: the Codex hook configuration for the selected local runtime, normally
 }
 ```
 
-Codex may require the hook to be enabled, reviewed, and trusted in its own hook UI.
+**Required after adding the Codex hook:** open the Codex CLI/TUI on the same Mac
+and configuration as your desktop app (`codex` in a terminal), then enter `/hooks`.
+Under `UserPromptSubmit`, review and accept/trust the entry containing
+`howfried-hook codex` with your chosen bundle path, and ensure it is enabled.
+Accept only the relevant HowFried entry. New or changed definitions are skipped
+until trusted; adding JSON alone is not enough. If missing, check the config source
+and refresh/reopen the CLI before adding anything else. A changed command/path may
+require trust again. Never edit trust hashes or bypass review to complete setup.
 Availability depends on the installed client/runtime. Verify CLI and desktop separately;
 success in one is not evidence for the other. This prototype does not inspect or alter
 Codex trust settings. A Codex turn ID is not treated as a submission ID: follow-up input

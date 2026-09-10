@@ -5,8 +5,8 @@ enum Palette {
     static func adaptive(_ light: NSColor, _ dark: NSColor) -> Color {
         Color(nsColor: NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light })
     }
-    static let paper = adaptive(NSColor(srgbRed: 0.97, green: 0.95, blue: 0.89, alpha: 1), NSColor(srgbRed: 0.085, green: 0.12, blue: 0.11, alpha: 1))
-    static let ink = adaptive(NSColor(srgbRed: 0.18, green: 0.24, blue: 0.17, alpha: 1), NSColor(srgbRed: 0.91, green: 0.93, blue: 0.86, alpha: 1))
+    static let paper = adaptive(NSColor(srgbRed: 0.97, green: 0.95, blue: 0.89, alpha: 1), NSColor(srgbRed: 0.12, green: 0.115, blue: 0.11, alpha: 1))
+    static let ink = adaptive(NSColor(srgbRed: 0.18, green: 0.24, blue: 0.17, alpha: 1), NSColor(srgbRed: 0.94, green: 0.92, blue: 0.88, alpha: 1))
     static let orange = adaptive(NSColor(srgbRed: 0.75, green: 0.32, blue: 0.17, alpha: 1), NSColor(srgbRed: 0.94, green: 0.62, blue: 0.39, alpha: 1))
     static let face = Color(red: 0.18, green: 0.24, blue: 0.17)
     static let bandana = Color(red: 0.75, green: 0.32, blue: 0.17)
@@ -17,6 +17,7 @@ struct Dashboard: View {
     @ObservedObject var model: AppModel
     @State private var rule = BreakSettings()
     @State private var setup = false
+    @State private var copiedSetup: String?
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -41,19 +42,27 @@ struct Dashboard: View {
                 }
                 VStack(alignment: .leading, spacing: 12) {
                     HStack { Text(model.isPreview ? "PREVIEW · REAL TOTALS UNCHANGED" : "THIS CYCLE").eyebrow(); Spacer(); Text(model.displayed.phase.rawValue.uppercased()).eyebrow() }
+                    if !model.preferences.codexEnabled && !model.preferences.claudeEnabled {
+                        Label("No AI tools connected. Prompts are not being counted.", systemImage: "exclamationmark.circle").font(.callout).foregroundStyle(Palette.orange)
+                        Button("Connect an AI tool") { setup = true }
+                    }
                     Text(model.progressLabel).font(.system(size: 23, weight: .medium, design: .rounded))
                     ProgressView(value: model.progress).tint(Palette.orange)
                     if model.displayed.deadline != nil {
                         Text("\(model.displayed.remaining(now: model.displayNow)) seconds remaining").font(.caption).monospacedDigit()
                     }
+                    if model.isPreview || [.warning, .resting, .entrance, .snoozed].contains(model.engine.phase) {
+                        HStack(spacing: 10) {
+                            Button { model.snooze() } label: { Text("Snooze 10 min").frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent)
+                            Button { model.skip() } label: { Text(model.isPreview ? "End preview" : "Skip this break").frame(maxWidth: .infinity) }.buttonStyle(.bordered)
+                        }.controlSize(.large)
+                    }
                     HStack {
                         Button(model.preferences.paused ? "Resume tracking" : "Pause tracking") { model.setPaused(!model.preferences.paused) }
                         Spacer()
-                        Button("Preview break") { model.preview() }
-                    }.buttonStyle(.bordered)
-                    if model.isPreview || [.warning, .resting, .entrance, .snoozed].contains(model.engine.phase) {
-                        HStack { Button("Snooze 10 min") { model.snooze() }; Button("Skip this break") { model.skip() } }
-                    }
+                        if !model.isPreview { Button("Preview break") { model.preview() } }
+                    }.buttonStyle(.plain).font(.caption).foregroundStyle(Palette.orange)
+
                 }.card()
                 HStack(spacing: 0) {
                     stat("\(model.summary.totalPrompts)", "PROMPTS TODAY")
@@ -69,7 +78,14 @@ struct Dashboard: View {
                         Text("Session time").tag(TriggerMode.timer)
                         if model.preferences.tokensEnabled && model.preferences.claudeEnabled { Text("Claude tokens").tag(TriggerMode.tokens) }
                     }.pickerStyle(.segmented)
-                    if rule.mode == .prompts { Stepper("After \(rule.promptLimit) prompts", value: $rule.promptLimit, in: 5...200, step: 5) }
+                    if rule.mode == .prompts { HStack {
+                        Text("Break after")
+                        TextField("Prompts", value: $rule.promptLimit, format: .number.grouping(.never))
+                            .textFieldStyle(.roundedBorder).frame(width: 65)
+                            .accessibilityLabel("Prompt limit")
+                        Stepper("prompts", value: $rule.promptLimit, in: 1...200)
+                    }
+                    Text("1–200 prompts · use 1 to test a connected hook").font(.caption).foregroundStyle(.secondary) }
                     if rule.mode == .timer { Stepper("After \(rule.minutes) minutes", value: $rule.minutes, in: 15...180, step: 15) }
                     if rule.mode == .tokens { Stepper("After \(rule.tokenLimit.formatted()) tokens", value: $rule.tokenLimit, in: 25_000...2_000_000, step: 25_000) }
                     Text(rule.mode == .timer ? "Elapsed time from your next prompt, including gaps. Not an attention measurement." : rule.mode == .tokens ? "Claude only. Includes cached inputs, so long contexts can reach this quickly. Not a spending cap." : "Across connected Claude Code and Codex sessions. Tool calls don’t count.").font(.caption).foregroundStyle(.secondary)
@@ -81,6 +97,11 @@ struct Dashboard: View {
                     provider(.claude, enabled: model.preferences.claudeEnabled, count: model.summary.claudePrompts)
                     Divider()
                     provider(.codex, enabled: model.preferences.codexEnabled, count: model.summary.codexPrompts)
+                    HStack {
+                        Button("Copy Codex setup prompt") { copySetup("codex") }
+                        Button("Copy Claude setup prompt") { copySetup("claude") }
+                    }.font(.caption)
+                    if let copiedSetup { Text(copiedSetup).font(.caption).foregroundStyle(.secondary) }
                     if setup {
                         Text("Enabling observation does not install a hook. Use the additive snippets in the bundled setup guide, then send one prompt in each client. Existing hooks must be preserved.").font(.caption)
                         Button("Open setup instructions") {
@@ -117,11 +138,22 @@ struct Dashboard: View {
                     Text("Pause excludes new observations and clears the cycle. Data stays on this Mac for up to seven days.").font(.caption).foregroundStyle(.secondary)
                 }.card()
                 if let error = model.error { Text(error).foregroundStyle(Palette.orange).font(.caption) }
-                HStack { Text("Go easy on your human.").font(.system(.callout, design: .serif)).italic(); Spacer(); Button("Quit HowFried") { NSApp.terminate(nil) } }
+                HStack { Text("Go easy on your human.").font(.system(.callout, design: .serif)).italic(); Spacer() }
             }.padding(26)
+        }.safeAreaInset(edge: .bottom, spacing: 0) {
+            HStack {
+                Text("HowFried · 10 Sep build").font(.caption2).foregroundStyle(.secondary)
+                Spacer()
+                Button("Quit HowFried") { NSApp.terminate(nil) }.buttonStyle(.bordered)
+            }.padding(.horizontal, 24).padding(.vertical, 10).background(Palette.paper)
         }.background(Palette.paper).foregroundStyle(Palette.ink).tint(Palette.orange)
             .frame(width: 440).onAppear { rule = model.preferences.rule }
             .onChange(of: model.preferences.rule) { _, value in rule = value }
+    }
+    private func copySetup(_ provider: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(SetupPrompt.text(provider: provider), forType: .string)
+        copiedSetup = "Copied. Paste into your agent, approve setup, then enable observation and send a test prompt."
     }
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 5) { Text(value).font(.system(size: 29, weight: .semibold, design: .serif)); Text(label).font(.system(size: 9, weight: .medium, design: .monospaced)) }

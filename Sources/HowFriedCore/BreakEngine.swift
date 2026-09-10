@@ -12,7 +12,7 @@ public struct BreakSettings: Codable, Equatable {
     public var tokenLimit: Int64 = 100_000
     public init() {}
     public mutating func clamp() {
-        promptLimit = min(200, max(5, promptLimit)); minutes = min(180, max(15, minutes))
+        promptLimit = min(200, max(1, promptLimit)); minutes = min(180, max(15, minutes))
         tokenLimit = min(2_000_000, max(25_000, tokenLimit))
     }
 }

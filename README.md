@@ -1,97 +1,127 @@
-# HowFried
+# HowFried 🐾
 
-A small golden retriever with a very reasonable request: take a walk between prompts.
+**Your agents have tasks. Your dog has concerns.**
 
-Local macOS 14+ prototype. SwiftUI + AppKit, built-in SQLite, no third-party packages,
-accounts, servers, tracking SDKs, or generated art. One primary display and one dog.
+A tiny native Mac companion that reminds you to take a walk between AI prompts.
+Paws appear beside your notch, a small golden puppy comes to get you, and your
+screen turns into a five-minute park break. Your agents can keep working underneath.
 
-## Build and launch
+**Open source · MIT · macOS 14+ · Early prototype**
 
-Requires Apple's Swift toolchain / Command Line Tools. From this directory:
+## A little less fried
+
+- **Choose your limit:** 1–200 submitted prompts, elapsed session time, or optional
+  observed Claude tokens. Defaults: 20 prompts / 60 minutes / 100,000 tokens.
+- **See the warning:** alternating footsteps beside the notch for 30 seconds.
+- **Take five:** a tiny puppy walks in and settles into a day or night park.
+- **Stay in control:** snooze for 10 minutes, skip, pause, or quit from the menu bar.
+- **Keep it quiet:** optional original piano-like loops, off until you press Play.
+- **Make it yours:** light, warm charcoal or system appearance; Reduce Motion support.
+
+HowFried counts **user submissions**, not agent replies, tool calls or model loops.
+Session time includes gaps after the first prompt; it does not measure attention.
+This is a break reminder, not a system lock, spending cap or productivity score.
+
+## Try it from source
+
+There is **no signed/notarized download or Homebrew package yet**. Requires macOS 14+
+and Apple's Swift toolchain / Command Line Tools. Tested on Apple Silicon; Intel
+hardware has not been verified. Windows and Linux are not supported.
 
 ```sh
+git clone https://github.com/divitkashyap/HowFried.git
+cd HowFried
 swift test
 bash scripts/build.sh
 ```
 
-The build script creates a **new**, uniquely named `artifacts/<build>/HowFried.app` and
-prints its absolute path. Open that bundle in Finder or with `open '/absolute/path/HowFried.app'`.
-It does not install into Applications, change login items, or modify providers. Local
-ad-hoc signing is for this Mac; this is not a notarized distribution release.
+The script prints the path to a new `artifacts/<build>/HowFried.app`. Open that bundle
+in Finder. Builds are locally ad-hoc signed, not notarized distribution releases.
+Quit any older HowFried copies first so multiple versions do not run together.
 
-The app opens a compact dashboard and adds a paw to the menu bar. Closing the dashboard
-leaves the menu bar app running. Use Quit HowFried to exit.
+The paw menu offers **Open HowFried**, **Skip current break**, and **Quit HowFried**.
+Closing the dashboard leaves the app running. Use **Preview break** to meet the puppy
+without changing real activity totals.
 
-## What it does
+## Connect Codex or Claude Code
 
-- Counts actual local Claude Code/Codex submission-hook invocations across sessions.
-- Choose a prompt limit (default 20), elapsed session timer (60 minutes), or optional
-  Claude-only local token threshold (100,000 observed tokens).
-- Paws pace beside the notch for 30 seconds, then a dog enters and a park scene asks you
-  to take five minutes away. The timer starts after the entrance finishes.
-- Snooze for ten minutes, skip, pause observation, or quit at any time.
-- Default global skip shortcut: **Control–Option–Command–B**. Change its modifiers/key in
-  the dashboard. A failed registration is shown. Escape works while the overlay has focus.
-- Reduce Motion replaces the entrance with a static pet and brief fade. Without a notch,
-  the warning sits around a small top-centre capsule. Other displays remain usable.
+**Applying a limit does not connect your AI tools.** Observation starts disabled.
 
-This is a break reminder, not a token-spending firewall. Agents can continue working
-under the overlay. “Fried” is a joke, not a diagnosis. Session time includes gaps and
-does not measure attention.
+1. In Connections, choose **Copy Codex setup prompt** or **Copy Claude setup prompt**.
+2. Paste it into your agent. Review and approve its proposed configuration changes.
+   The instructions preserve existing hooks, create a backup and avoid duplicates.
+3. **Codex:** open the Codex CLI/TUI on the same Mac/configuration, enter `/hooks`,
+   and review/trust the `UserPromptSubmit` entry containing `howfried-hook codex`.
+   New or changed hooks are skipped until trusted. Accept only the relevant entry.
+   **Claude Code:** review the hook using the installed client's hook settings.
+4. Enable observation for that provider in HowFried.
+5. Set the limit to **1**, click **Apply & start a fresh cycle**, and send one real
+   prompt from the client you intend to use. Confirm the counter advances and warning
+   begins, then choose your normal limit.
 
-## Connect providers
+Prefer manual configuration? See [SETUP.md](docs/SETUP.md) for additive snippets.
+Keep the connected app bundle at the same path. Moving it or changing its hook command
+requires updating the configuration and may require trusting the new definition.
 
-See [the additive setup guide](docs/SETUP.md). Observation is off until enabled. Provider
-hooks must be separately configured and trusted by the owner. No real provider settings
-have been changed by this project. Synthetic testing and live testing are reported separately.
+**Stuck at 0 / 1?** Check observation is enabled, the hook points to an existing
+executable, and Codex has trusted the exact definition. Restart/reload the client if
+needed. “Awaiting first event” means delivery has not been verified yet. Preview is
+not proof that provider integration works.
 
-## Data and limits
+## Current coverage
 
-The private store is `~/Library/Application Support/HowFried/activity.sqlite`. It keeps
-hashed session/event identities, timestamps, source labels, token numbers, settings and
-break outcomes. It does not save prompts, replies, tool arguments, credentials or project
-paths. Hook stdin is parsed in memory and discarded. The opt-in Claude scanner reads usage
-records in memory; only usage metadata and hashed checkpoints are retained.
+| Feature | Status |
+| --- | --- |
+| Codex submitted prompts | Live local delivery verified after hook trust |
+| Claude Code submitted prompts | Adapter tested with synthetic events; live validation pending |
+| Token totals | Opt-in new local Claude usage records only; Codex tokens unavailable |
+| Desktop coverage | One primary display; external monitors remain usable |
+| Warning / break duration | 30-second warning, five-minute break |
+| Dismissal | Visible controls; default global shortcut ⌃⌥⌘B; Escape when focused |
+| Global shortcut across apps, Spaces, display hotplug | Further hardware checks needed |
+| Streaming radio, Spotify, cats, recaps, Windows/Linux | Not implemented |
 
-SQLite's atomic insert and unique identity constraint protect concurrent writes and
-replays. Seven-day retention removes old **rows inside the app-owned database**, without
-deleting files. No unrelated files or user configurations are cleaned up. Hook observation
-fails open on errors and never waits for the dog or an approval. Very busy/unavailable
-storage or invalid/oversized payloads may drop observations; this is not billing-grade data.
+A real Codex submission has reached the local counter. That does not establish
+compatibility with every Codex version, host or remote task. Token totals are partial
+observations, include cache usage, and are not billing-grade data.
 
-For isolated manual tests, launch the bundle's executable with `HOWFRIED_DATA_DIR` set to
-an absolute empty project directory. `HOWFRIED_QA=1` marks the dashboard Demo Lab, uses
-only synthetic Claude logs inside that directory, and speeds preview time by 6×. Real
-prompt/time rules are never accelerated. Preview actions do not change daily totals.
+## Local by design
 
-## Project map
+SwiftUI + AppKit, SQLite, original vector artwork and synthesized music. No third-party
+package dependencies, accounts, servers, telemetry SDKs or background AI requests.
 
-- `Sources/HowFriedCore`: provider parsing, private store, incremental usage scanner,
-  deterministic break state machine.
-- `Sources/HowFriedHook`: quiet, bounded native stdin observer; no approval responses.
-- `Sources/HowFried`: menu bar/dashboard, global shortcut, warning panel, original vector
-  pet and park overlay.
-- `Tests/HowFriedCoreTests`: synthetic data only; retained under `.qa/tests` without cleanup.
+Data stays in `~/Library/Application Support/HowFried/activity.sqlite`: hashed event
+and session identities, timestamps, provider labels, optional token counts, settings
+and break outcomes. No prompts, replies, tool arguments, credentials or project paths
+are stored. The optional Claude scanner reads local records in memory and discards
+conversation content. Records have seven-day logical retention.
 
-New integrations should emit normalized `ActivityEvent` records with source/session/event
-identity. Keep their parsers separate from the engine and views. Declare unsupported
-signals unavailable. Editor-process detection must not masquerade as prompt detection.
+The hook returns no agent instructions or approval decisions and fails open if
+observation is unavailable. Duplicate installations can overcount; install once per
+provider. Missing/invalid events can be dropped. Agents continue during breaks.
 
-Loch was inspected read-only as an architectural reference. No Loch source/assets were
-copied and its working tree was not changed.
+## Development and contributions
 
-See [BUILD_STATUS.md](BUILD_STATUS.md) for budget and verification status.
+Run `swift test` and `bash scripts/build.sh`. Tests use synthetic data; please do not
+attach real conversations, tokens or configuration files to issues.
 
-### Appearance and break music
+For isolated manual testing, set `HOWFRIED_DATA_DIR` to an empty local directory when
+launching the executable. `HOWFRIED_QA=1` accelerates preview countdowns only and mutes
+audio output. See [manual checks](docs/MANUAL_CHECKS.md).
 
-Choose System, Light or Dark in Small Preferences. The park independently follows
-local time: a moon from 7pm to 7am, and a moving daytime sun. During a break,
-**Play something peaceful** chooses an original local piano-like loop; **Mute music**
-stops it. Nothing plays automatically, and closing the break stops playback.
-Streaming playlists and bedtime reminders remain future ideas.
+- `Sources/HowFried`: dashboard, notch, overlay, puppy and audio.
+- `Sources/HowFriedCore`: event adapters, local store and break state machine.
+- `Sources/HowFriedHook`: bounded, quiet submission observer.
+- `Tests/HowFriedCoreTests`: parsing, privacy, counter, timing and geometry checks.
 
-## Launch and future direction
+Small focused contributions are welcome. For new providers, emit normalized events
+through a separate adapter and declare unavailable signals honestly. For large changes,
+open an issue first. Good next areas: multi-display behavior, onboarding, accessibility
+and a tested release workflow. A Windows port requires a new platform layer; this SwiftUI/
+AppKit app cannot simply be packaged as a Windows executable.
 
-See [the launch plan](docs/LAUNCH_PLAN.md) for positioning, draft posts and the video
-storyboard, and [the companion roadmap](docs/COMPANION_ROADMAP.md) for proposed
-return cards and explicitly authorized agent recaps. These are plans, not shipped features.
+[Companion roadmap](docs/COMPANION_ROADMAP.md) · [Launch ideas](docs/LAUNCH_PLAN.md)
+
+## License
+
+[MIT](LICENSE). Original project code, puppy artwork and synthesized music are included.

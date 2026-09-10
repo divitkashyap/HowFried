@@ -202,7 +202,7 @@ final class CoreTests: XCTestCase {
     func testFreshEngineIgnoresPriorCycleAndClampsSettings() {
         var s = BreakSettings(); s.promptLimit = 1; s.minutes = 999; s.tokenLimit = -1
         var e = BreakEngine(settings: s)
-        XCTAssertEqual(e.settings.promptLimit, 5); XCTAssertEqual(e.settings.minutes, 180); XCTAssertEqual(e.settings.tokenLimit, 25_000)
+        XCTAssertEqual(e.settings.promptLimit, 1); XCTAssertEqual(e.settings.minutes, 180); XCTAssertEqual(e.settings.tokenLimit, 25_000)
         e.consume(prompt("first"), now: 0); e.reset(); e.tick(now: 100_000)
         XCTAssertEqual(e.phase, .waiting); XCTAssertEqual(e.prompts, 0); XCTAssertNil(e.cycleStart)
     }
@@ -266,6 +266,16 @@ final class CoreTests: XCTestCase {
             abs(Int(Int16(bitPattern: UInt16(bytes[$0]) | UInt16(bytes[$0+1]) << 8)))
         }.max()!
         XCTAssertGreaterThan(peak, 1000); XCTAssertLessThan(peak, 31000)
+    }
+
+    func testSinglePromptTriggersWarning() {
+        var settings = BreakSettings(); settings.promptLimit = 1
+        var engine = BreakEngine(settings: settings)
+        engine.consume(prompt("single-submission"), now: 0)
+        XCTAssertEqual(engine.phase, .warning)
+        XCTAssertEqual(engine.prompts, 1)
+        settings.promptLimit = 0
+        XCTAssertEqual(BreakEngine(settings: settings).settings.promptLimit, 1)
     }
 
 }
