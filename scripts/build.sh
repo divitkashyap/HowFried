@@ -24,6 +24,11 @@ cat > "$app_dir/Contents/Info.plist" <<'PLIST'
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
-codesign --sign - "$app_dir/Contents/MacOS/howfried-hook"
-codesign --sign - "$app_dir"
+if [[ -n "${HOWFRIED_SIGN_IDENTITY:-}" ]]; then
+    codesign --sign "$HOWFRIED_SIGN_IDENTITY" --options runtime --timestamp "$app_dir/Contents/MacOS/howfried-hook"
+    codesign --sign "$HOWFRIED_SIGN_IDENTITY" --options runtime --timestamp "$app_dir"
+else
+    codesign --sign - "$app_dir/Contents/MacOS/howfried-hook"
+    codesign --sign - "$app_dir"
+fi
 printf '%s\n' "$app_dir"

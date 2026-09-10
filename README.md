@@ -24,7 +24,9 @@ This is a break reminder, not a system lock, spending cap or productivity score.
 
 ## Try it from source
 
-There is **no signed/notarized download or Homebrew package yet**. Requires macOS 14+
+A [signed and notarized Apple Silicon preview](https://github.com/divitkashyap/HowFried/releases/tag/v0.1.0) is available. Download the ZIP, quit older copies, and move the app to Applications before connecting hooks. There is no Homebrew package yet.
+
+To build from source, requires macOS 14+
 and Apple's Swift toolchain / Command Line Tools. Tested on Apple Silicon; Intel
 hardware has not been verified. Windows and Linux are not supported.
 

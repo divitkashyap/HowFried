@@ -134,3 +134,13 @@ trusted the HowFried hook. Codex observation enabled with permission; existing h
 preserved and private backup created. Earlier pending/untouched statements above
 are historical. Claude live delivery remains unverified. Latest setup-prompt bundle:
 `artifacts/20260910T101344Z-64220/HowFried.app`. README is the public capability summary.
+
+## Developer ID release · 10 September
+
+Version 0.1.0, Apple Silicon, macOS 14+. Fresh build signed with Developer ID and
+hardened runtime, including the bundled hook. Apple notarization accepted; ticket
+stapled and validated. Gatekeeper accepted both original and ZIP-extracted app as
+Notarized Developer ID. Final local archive:
+`artifacts/20260910T102534Z-65439/HowFried-0.1.0-macos-arm64.zip`.
+SHA-256: `1ceb5a3725b71cc9e116087e0ca527260eb49f2f42dacdf937ef89f67c39b216`.
+No binary uploaded to GitHub Releases yet. No Homebrew tap created.
